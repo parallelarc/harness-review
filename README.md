@@ -25,9 +25,9 @@ Agent 的本质就是一个 `while true` 循环：**感知 → 决策 → 行动
 4. **编排器-工作者 Orchestrator-Workers**：中央 LLM 动态分解任务，委派给工作者 LLM，综合结果。Claude Code 的 spawn 工具和子 Agent 模式都是这个原型。
 5. **评估器-优化器 Evaluator-Optimizer**：生成器产出，评估器给反馈，循环直到达标。适合翻译、创意写作这类质量标准难以用代码精确定义的任务。
 
-![Agent Loop 模式](assets/image_1.png)
+![Agent Loop 模式](assets/img1.svg)
 
-![Agent 模式组合](assets/image_2.png)
+![Agent 模式组合](assets/img2.svg)
 
 ---
 
@@ -89,7 +89,7 @@ Claude Code 有完善的机制避免越界。
 | JSONL 会话历史 | 情景记忆 | 发生了什么——磁盘持久化，支持跨会话检索 |
 | MEMORY.md | 语义记忆 | Agent 主动写入认为重要的事实，每次启动时注入系统提示 |
 
-![记忆系统](assets/image_5.png)
+![记忆系统](assets/img5.svg)
 
 ### Claude Code 记忆
 
@@ -111,7 +111,7 @@ Claude Code 拥有两个互补的记忆系统：**CLAUDE.md** 和 **Auto Memory*
 2. Skill 描述要足够短：`Use when` / `Don't use when`
 3. 没有反例时准确率从基准 73% 掉到 53%，加上反例后升到 85%，响应时间还降了 18.1%。**反例是必要的**
 
-![Skill 示例](assets/image_6.png)
+![Skill 示例](assets/img6.webp)
 
 4. 常驻系统提示的只放高频 Skill，低频的不要塞进默认列表，需要时再手动引入。极低频的直接用文档替代就够了，不必做成 Skill
 

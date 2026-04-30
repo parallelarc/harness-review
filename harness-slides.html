@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Claude Code Harness</title>
+  <link rel="stylesheet" href=".claude/skills/html-ppt/assets/fonts.css">
+  <link rel="stylesheet" href=".claude/skills/html-ppt/assets/base.css">
+  <link rel="stylesheet" id="theme-link" href=".claude/skills/html-ppt/assets/themes/blueprint.css">
+  <link rel="stylesheet" href=".claude/skills/html-ppt/assets/animations/animations.css">
+  <style>
+    /* Harness Deck Custom Styles */
+    .pattern-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .pattern-card { padding: 20px 22px; border-radius: var(--radius-1); }
+    .pattern-card h4 { margin-bottom: 6px; }
+    .pattern-card p { font-size: 14px; line-height: 1.55; color: var(--text-2); }
+
+    .layer-row { display: grid; grid-template-columns: 140px 1fr; gap: 12px; align-items: center; padding: 14px 18px; border-radius: var(--radius-1); }
+    .layer-row + .layer-row { margin-top: 10px; }
+    .layer-tag { font-family: var(--font-mono); font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: var(--radius-2); text-align: center; }
+
+    .flow-h { display: flex; align-items: center; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .flow-node { padding: 14px 22px; border-radius: var(--radius-1); text-align: center; min-width: 120px; }
+    .flow-node h4 { font-size: 16px; margin-bottom: 2px; }
+    .flow-node p { font-size: 12px; color: var(--text-2); }
+    .flow-arrow { font-size: 28px; color: var(--accent-2); font-weight: 300; }
+
+    .bp-list { list-style: none; padding: 0; counter-reset: bp; }
+    .bp-list li { counter-increment: bp; padding: 12px 18px 12px 52px; position: relative; border-radius: var(--radius-1); margin-bottom: 8px; }
+    .bp-list li::before { content: counter(bp); position: absolute; left: 16px; top: 12px; font-family: var(--font-mono); font-weight: 700; font-size: 15px; color: var(--accent-3); }
+
+    .quote-line { border-left: 3px solid var(--accent-3); padding-left: 18px; margin: 20px 0; }
+    .quote-line p { font-size: 18px; line-height: 1.7; color: var(--text-1); font-style: italic; }
+
+    .ref-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+    .ref-card { padding: 16px 18px; border-radius: var(--radius-1); }
+    .ref-card h4 { font-size: 14px; margin-bottom: 4px; }
+    .ref-card p { font-size: 12px; color: var(--text-2); line-height: 1.5; }
+    .ref-card a { color: var(--accent-2); text-decoration: none; }
+
+    .img-frame { border-radius: var(--radius-1); overflow: hidden; border: 1px dashed rgba(190,220,255,.3); }
+    .img-frame img { width: 100%; display: block; }
+
+    .perm-code { font-family: var(--font-mono); font-size: 13px; line-height: 1.7; padding: 20px 24px; border-radius: var(--radius-1); }
+    .perm-code .kw { color: #ff8a96; }
+    .perm-code .str { color: #aee1ff; }
+    .perm-code .cmt { color: var(--dim2); }
+  </style>
+</head>
+<body>
+  <div class="deck" data-themes="blueprint tokyo-night dracula catppuccin-mocha terminal-green">
+
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+
+    <!-- ═══════════════════ Slide 1: Cover ═══════════════════ -->
+    <section class="slide is-active">
+      <div class="deck-header">
+        <span class="eyebrow">技术分享 / Tech Talk</span>
+      </div>
+      <div class="fill center" data-anim="fade-up">
+        <p class="kicker">从 Prompt Engineering 到 Context Engineering 再到</p>
+        <h1 class="h1"><span class="gradient-text">Claude Code Harness</span></h1>
+        <p class="lede dim" style="max-width:640px">
+          将不确定的智能应用于确定的生产流程<br>
+          信息的更高效组织 · 反映更强的模型能力 · 人类角色变化
+        </p>
+        <div class="row wrap" style="gap:10px;margin-top:28px">
+          <span class="pill">Agent Loop</span>
+          <span class="pill">Context Engineering</span>
+          <span class="pill">Memory System</span>
+          <span class="pill">Skills</span>
+          <span class="pill">Subagents</span>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span class="dim">2026 · Harness Deep Dive</span>
+        <span class="slide-number"></span>
+      </div>
+      <aside class="notes">
+        <p>大家好，今天这场分享的主题是<strong>Claude Code Harness</strong>。</p>
+        <p>我们在过去一年多里经历了一个明显的范式迁移：最早大家做 Prompt Engineering，本质上是精心设计单次交互；后来演变成 Context Engineering，关注的是如何在有限的上下文窗口里组织好信息；到现在，我们谈的是<strong>Harness</strong>——一套完整的工程化体系，把 AI Agent 当成一个确定性生产系统的一部分来管理。</p>
+        <p>今天的内容会覆盖几个核心模块：Agent 的本质循环和五种经典模式、Claude Code 的权限系统如何避免越界、上下文工程的构成要素、四级记忆系统、以及 Skill 和 Subagent 的设计哲学。</p>
+        <p>大约 30 分钟，节奏会比较紧凑。有问题可以随时打断，也可以留到最后 Q&A。</p>
+      </aside>
+    </section>
+
+    <!-- ═══════════════════ Slide 2: Background ═══════════════════ -->
+    <section class="slide">
+      <div class="deck-header">
+        <span class="eyebrow">01 / 背景</span>
+      </div>
+      <div style="padding:60px 80px">
+        <p class="kicker" data-anim="fade-up">为什么需要 Harness？</p>
+        <h2 class="h2" data-anim="fade-up">范式的三次跃迁</h2>
+
+        <div class="grid g2" style="margin-top:36px">
+          <div class="card card-accent" data-anim="fade-up">
+            <h4 style="color:var(--accent-3)">Prompt Engineering</h4>
+            <p class="dim">精心设计单次交互的提示词。模型能力有限时，人在替模型做决策。</p>
+          </div>
+          <div class="card card-accent" data-anim="fade-up">
+            <h4 style="color:var(--accent-3)">Context Engineering</h4>
+            <p class="dim">在有限的上下文窗口里组织信息。模型变强了，瓶颈转移到信息供给。</p>
+          </div>
+          <div class="card card-accent" data-anim="fade-up">
+            <h4 style="color:var(--accent-3)">Harness</h4>
+            <p class="dim">完整的工程化体系——权限、记忆、技能、子 Agent。默认模型已经够强，人类逐渐成为效率瓶颈。</p>
+          </div>
+          <div class="card" style="border-color:var(--accent-3)" data-anim="fade-up">
+            <h4 style="color:var(--accent-3)">核心理念</h4>
+            <div class="quote-line">
+              <p style="font-size:15px;font-style:normal">Harness 代表一种观念转变：默认模型能力已经很强，而人类逐渐成为系统效率的瓶颈。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span class="slide-number"></span>
+      </div>
+      <aside class="notes">
+        <p>先聊聊背景。为什么要引入 Harness 这个概念？</p>
+        <p>我们把时间线拉长来看。第一阶段是 <strong>Prompt Engineering</strong>，那时候模型能力有限，你需要非常精心地设计每一句提示词，本质上是在替模型做决策。</p>
+        <p>第二阶段是 <strong>Context Engineering</strong>。模型变强了，但它能看到什么、看不到什么，成了关键问题。你需要在有限的上下文窗口里高效地组织信息。</p>
+        <p>到了第三阶段就是 <strong>Harness</strong>。模型能力已经足够强，我们不再需要花大量精力去"教"模型，而是需要一套工程体系来管理权限、记忆、技能和子 Agent。核心观念变了——<strong>人类逐渐成为系统效率的瓶颈</strong>。</p>
+        <p>这不是说人不重要了，而是说人的角色从"操作者"变成了"系统设计师"。</p>
+      </aside>
+    </section>
+
+    <!-- ═══════════════════ Slide 3: Agent Loop ═══════════════════ -->
+    <section class="slide">
+      <div class="deck-header">
+        <span class="eyebrow">02 / Agent Loop</span>
+      </div>
+      <div style="padding:60px 80px">
+        <p class="kicker" data-anim="fade-up">Agent 的本质</p>
+        <h2 class="h2" data-anim="fade-up">一个 while(true) 循环</h2>
+
+        <div class="flow-h" style="margin-top:48px" data-anim="fade-up">
+          <div class="flow-node card-accent">
+            <h4>感知</h4>
+            <p>Perceive</p>
+          </div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-node card-accent">
+            <h4>决策</h4>
+            <p>Decide</p>
+          </div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-node card-accent">
+            <h4>行动</h4>
+            <p>Act</p>
+          </div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-node card-accent">
+            <h4>反馈</h4>
+            <p>Feedback</p>
+          </div>
+          <span class="flow-arrow" style="font-size:20px;opacity:.5">↩</span>
+        </div>
+
+        <div class="grid g2" style="margin-top:48px">
+          <div class="img-frame" data-anim="fade-up">
+            <img src="assets/image_1.png" alt="Agent Loop 模式">
+          </div>
+          <div class="img-frame" data-anim="fade-up">
+            <img src="assets/image_2.png" alt="Agent 模式组合">
+          </div>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span class="slide-number"></span>
+      </div>
+      <aside class="notes">
+        <p>那 Agent 到底是什么？抛开所有复杂的框架和术语，<strong>Agent 的本质就是一个 while(true) 循环</strong>：感知、决策、行动、反馈，然后回到感知。</p>
+        <p>这个循环听起来简单，但关键在于<strong>你怎么组合它</strong>。业界总结了五种经典的 Agent 模式，大多数 Agent 系统都是这五种模式的组合。</p>
+        <p>左边这张图展示了 Agent Loop 的基本结构，右边这张展示了模式如何组合。大家先有个整体印象，下一页我会逐个拆解这五种模式。</p>
+        <p>记住一个核心观点：<strong>好的 Agent 设计不是发明新模式，而是正确地组合已有模式</strong>。就像搭积木一样，组件是有限的，但组合方式是无限的。</p>
+      </aside>
+    </section>
+
+    <!-- ═══════════════════ Slide 4: 5 Agent Patterns ═══════════════════ -->
+    <section class="slide">
+      <div class="deck-header">
+        <span class="eyebrow">02 / Agent Loop</span>
+      </div>
+      <div style="padding:50px 80px">
+        <p class="kicker" data-anim="fade-up">五种经典模式</p>
+        <h2 class="h2" data-anim="fade-up">大多数 Agent 系统是这些模式的组合</h2>
+
+        <div class="pattern-grid" style="margin-top:32px">
+          <div class="pattern-card card-accent" data-anim="fade-up">
+            <h4><span style="color:var(--accent-3)">①</span> 提示链 Prompt Chaining</h4>
+            <p>任务拆成顺序步骤，每步处理上一步输出。中间可加代码检查点。适合生成后翻译、先大纲再正文。</p>
+          </div>
+          <div class="pattern-card card-accent" data-anim="fade-up">
+            <h4><span style="color:var(--accent-3)">②</span> 路由 Routing</h4>
+            <p>对输入分类，定向到专用处理流程。简单问题走轻量模型，复杂问题走强模型。</p>
+          </div>
+          <div class="pattern-card card-accent" data-anim="fade-up">
+            <h4><span style="color:var(--accent-3)">③</span> 并行 Parallelization</h4>
+            <p>分段法：任务拆成独立子任务并发；投票法：同一任务跑多次取共识。适合高风险决策。</p>
+          </div>
+          <div class="pattern-card card-accent" data-anim="fade-up">
+            <h4><span style="color:var(--accent-3)">④</span> 编排器-工作者</h4>
+            <p>中央 LLM 动态分解任务，委派给工作者，综合结果。<strong>Claude Code 的 spawn 和子 Agent 就是这个模式</strong>。</p>
+          </div>
+          <div class="pattern-card card-accent" data-anim="fade-up">
+            <h4><span style="color:var(--accent-3)">⑤</span> 评估器-优化器</h4>
+            <p>生成器产出，评估器给反馈，循环直到达标。适合翻译、创意写作等质量标准难以精确定义的任务。</p>
+          </div>
+        </div>
+
+        <p class="dim" style="margin-top:24px;text-align:center;font-size:13px">
+          Claude Code 主要使用模式④（Orchestrator-Workers）+ 模式③（Parallelization for Subagents）
+        </p>
+      </div>
+      <div class="deck-footer">
+        <span class="slide-number"></span>
+      </div>
+      <aside class="notes">
+        <p>这五种模式大家不需要都背下来，但需要理解它们的<strong>适用场景</strong>。</p>
+        <p><strong>提示链</strong>最简单，适合线性的、步骤明确的任务。比如先让模型写大纲，确认后再写正文。<strong>路由</strong>本质是一个 if-else——根据输入类型分发到不同处理逻辑。</p>
+        <p><strong>并行</strong>有两种用法：一种是把大任务拆成小块同时跑，另一种是同一件事跑多次投票取共识，这在高风险决策场景很有用。</p>
+        <p><strong>编排器-工作者</strong>是最重要的一个模式，也是 Claude Code 的核心。主 Agent 作为编排器动态分解任务，委派给子 Agent，最后综合结果。</p>
+        <p><strong>评估器-优化器</strong>适合质量标准难以精确描述的场景，比如翻译质量——让另一个模型来评估，不达标就重新生成。</p>
+        <p>实际系统中，这些模式往往是<strong>嵌套组合</strong>的。Claude Code 就同时使用了编排器-工作者和并行模式。</p>
+      </aside>
+    </section>
+
+    <!-- ═══════════════════ Slide 5: Permissions ═══════════════════ -->
+    <section class="slide">
+      <div class="deck-header">
+        <span class="eyebrow">03 / 权限系统</span>
+      </div>
+      <div style="padding:50px 80px">
+        <p class="kicker" data-anim="fade-up">Claude Code 可见内容与权限边界</p>
+        <h2 class="h2" data-anim="fade-up">完善的机制避免越界</h2>
+
+        <div class="grid g2" style="margin-top:32px">
+          <div data-anim="fade-up">
+            <h4 style="margin-bottom:16px;color:var(--accent-3)">七种权限模式</h4>
+            <div class="perm-code card">
+<span class="kw">type</span> PermissionMode =
+  | <span class="str">'default'</span>           <span class="cmt">// 敏感操作始终询问</span>
+  | <span class="str">'acceptEdits'</span>       <span class="cmt">// 自动批准文件编辑</span>
+  | <span class="str">'bypassPermissions'</span> <span class="cmt">// 自动批准一切 ⚠️</span>
+  | <span class="str">'dontAsk'</span>           <span class="cmt">// 自动拒绝需要询问的</span>
+  | <span class="str">'plan'</span>              <span class="cmt">// 只读 + 计划文件</span>
+  | <span class="str">'auto'</span>              <span class="cmt">// AI 分类器自动审批</span>
+  | <span class="str">'bubble'</span>;           <span class="cmt">// 冒泡到父 Agent</span>
+            </div>
+          </div>
+          <div data-anim="fade-up">
+            <h4 style="margin-bottom:16px;color:var(--accent-3)">Claude Code 能看到什么？</h4>
+            <div class="card" style="margin-bottom:12px">
+              <p><strong>项目文件</strong> — 目录及子目录中的文件</p>
+            </div>
+            <div class="card" style="margin-bottom:12px">
+              <p><strong>终端</strong> — 你能运行的命令它都能跑</p>
+            </div>
+            <div class="card" style="margin-bottom:12px">
+              <p><strong>Git 状态</strong> — 分支、未提交更改、提交历史</p>
+            </div>
+            <div class="card" style="margin-bottom:12px">
+              <p><strong>CLAUDE.md</strong> — 人类引导行为的项目契约</p>
+            </div>
+            <div class="card">
+              <p><strong>Auto Memory</strong> — 自动保存的学习成果</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span class="slide-number"></span>
+      </div>
+      <aside class="notes">
+        <p>聊完 Agent 模式，我们来看看 Claude Code 的<strong>权限系统</strong>。这一块经常被忽略，但它其实是 Harness 能安全运行的基础。</p>
+        <p>左边是七种权限模式，日常主要用四种：<strong>default</strong> 是最安全的，敏感操作都会询问你；<strong>acceptEdits</strong> 自动批准文件编辑但其他操作还是询问；<strong>bypassPermissions</strong> 就是大开后门，一般只在 CI 或完全信任的场景用；<strong>plan 模式</strong>很有意思——它让 Agent 只能读文件和写计划，不能改任何代码。</p>
+        <p>右边是 Claude Code 能看到的所有内容。注意，它能看到的东西和你一样——项目文件、终端命令、Git 状态。还有一个很重要的 <strong>CLAUDE.md</strong>，它是你给 Agent 的项目契约。</p>
+        <p>所以权限设计的核心思路是：<strong>默认限制，按需放开</strong>。Bubble 模式是给子 Agent 用的——子 Agent 遇到越权操作时，不是直接拒绝，而是冒泡回主 Agent 处理。</p>
+      </aside>
+    </section>
+
+    <!-- ═══════════════════ Slide 6: Context Engineering ═══════════════════ -->
+    <section class="slide">
+      <div class="deck-header">
+        <span class="eyebrow">04 / Context Engineering</span>
+      </div>
+      <div style="padding:50px 80px">
+        <p class="kicker" data-anim="fade-up">Agent 看不到的内容等于不存在</p>
+        <h2 class="h2" data-anim="fade-up">上下文的构成</h2>
+
+        <div class="grid g2" style="margin-top:32px">
+          <div data-anim="fade-up">
+            <div class="layer-row card">
+              <span class="layer-tag" style="background:var(--accent-1);color:var(--bg)">始终常驻</span>
+              <div>
+                <strong>CLAUDE.md</strong>
+                <p class="dim" style="font-size:13px;margin-top:2px">项目契约 / 构建命令 / 禁止事项</p>
+              </div>
+            </div>
+            <div class="layer-row card">
+              <span class="layer-tag" style="background:var(--accent-2);color:var(--bg)">按路径加载</span>
+              <div>
+                <strong>Rules</strong>
+                <p class="dim" style="font-size:13px;margin-top:2px">语言 / 目录 / 文件类型特定规则</p>
+              </div>
+            </div>
+            <div class="layer-row card">
+              <span class="layer-tag" style="background:var(--accent-3);color:var(--bg)">按需加载</span>
+              <div>
+                <strong>Skills</strong>
+                <p class="dim" style="font-size:13px;margin-top:2px">工作流 / 领域知识</p>
+              </div>
+            </div>
+            <div class="layer-row card">
+              <span class="layer-tag" style="background:var(--good);color:var(--bg)">隔离加载</span>
+              <div>
+                <strong>Subagents</strong>
+                <p class="dim" style="font-size:13px;margin-top:2px">大量探索 / 并行研究</p>
+              </div>
+            </div>
+            <div class="layer-row card">
+              <span class="layer-tag" style="background:var(--bad);color:var(--bg)">不进上下文</span>
+              <div>
+                <strong>Hooks</strong>
+                <p class="dim" style="font-size:13px;margin-top:2px">确定性脚本 / 审计 / 阻断</p>
+              </div>
+            </div>
+          </div>
+          <div data-anim="fade-up">
+            <div class="img-frame">
+              <img src="assets/image_4.png" alt="上下文构成">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span class="slide-number"></span>
+      </div>
+      <aside class="notes">
+        <p>这句话我希望大家记住：<strong>"Agent 看不到的内容等于不存在。"</strong>这就是 Context Engineering 的核心。</p>
+        <p>左边列出了上下文的五种加载方式。最上面是<strong>始终常驻的 CLAUDE.md</strong>，每次对话都会加载，相当于项目的基本法。然后是<strong>按路径加载的 Rules</strong>，比如你打开一个 .py 文件，就自动加载 Python 相关的规则。</p>
+        <p><strong>Skills 是按需加载</strong>的——只有在需要时才注入上下文，不浪费宝贵的 token。<strong>Subagents 是隔离加载</strong>的——每个子 Agent 有独立的上下文窗口，互不污染。</p>
+        <p>最后是 <strong>Hooks</strong>，这个很特别——它们根本不进上下文窗口。Hooks 是确定性脚本，在工具调用前后执行，Agent 完全感知不到。这就像一个隐形的护栏。</p>
+        <p>右边这张图展示了这些元素如何协同工作。核心原则是<strong>渐进式披露</strong>——不是把所有信息一股脑塞进去，而是按需、按路径、按场景加载。</p>
+      </aside>
+    </section>
+
+    <!-- ═══════════════════ Slide 7: Memory System ═══════════════════ -->
+    <section class="slide">
+      <div class="deck-header">
+        <span class="eyebrow">05 / 记忆系统</span>
+      </div>
+      <div style="padding:50px 80px">
+        <p class="kicker" data-anim="fade-up">通用四级记忆系统</p>
+        <h2 class="h2" data-anim="fade-up">从工作记忆到语义记忆</h2>
+
+        <div style="margin-top:32px">
+          <div class="card card-accent" style="margin-bottom:12px" data-anim="fade-up">
+            <div class="row" style="gap:20px;align-items:center">
+              <span class="layer-tag" style="background:var(--accent-3);color:var(--bg);white-space:nowrap">L1 上下文窗口</span>
+              <div>
+                <strong>工作记忆</strong>
+                <p class="dim" style="font-size:13px">当前任务所需的最小信息。Token 有限，需主动管理。超过 50% 后性能指数级下降。</p>
+              </div>
+            </div>
+          </div>
+          <div class="card card-accent" style="margin-bottom:12px" data-anim="fade-up">
+            <div class="row" style="gap:20px;align-items:center">
+              <span class="layer-tag" style="background:var(--accent-2);color:var(--bg);white-space:nowrap">L2 Skills</span>
+              <div>
+                <strong>程序性记忆</strong>
+                <p class="dim" style="font-size:13px">怎么做某件事——操作流程、领域规范。按需加载，不默认常驻。</p>
+              </div>
+            </div>
+          </div>
+          <div class="card card-accent" style="margin-bottom:12px" data-anim="fade-up">
+            <div class="row" style="gap:20px;align-items:center">
+              <span class="layer-tag" style="background:var(--accent-1);color:var(--bg);white-space:nowrap">L3 会话历史</span>
+              <div>
+                <strong>情景记忆</strong>
+                <p class="dim" style="font-size:13px">JSONL 磁盘持久化。发生了什么——支持跨会话检索。</p>
+              </div>
+            </div>
+          </div>
+          <div class="card card-accent" data-anim="fade-up">
+            <div class="row" style="gap:20px;align-items:center">
+              <span class="layer-tag" style="background:var(--good);color:var(--bg);white-space:nowrap">L4 MEMORY.md</span>
+              <div>
+                <strong>语义记忆</strong>
+                <p class="dim" style="font-size:13px">Agent 主动写入认为重要的事实。每次启动时注入系统提示，前 200 行或 25KB。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid g2" style="margin-top:24px">
+          <div class="card dim" style="font-size:13px" data-anim="fade-up">
+            <strong>OpenClaw 混合检索：</strong>日志追加写 + 精选事实 + 70% 向量相似度 + 30% 关键词权重
+          </div>
+          <div class="img-frame" data-anim="fade-up">
+            <img src="assets/image_5.png" alt="记忆系统">
+          </div>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span class="slide-number"></span>
+      </div>
+      <aside class="notes">
+        <p>记忆系统是 Harness 的另一个核心模块。我把它类比成人类的<strong>四级记忆</strong>。</p>
+        <p><strong>L1 是工作记忆</strong>，就是上下文窗口。这个窗口很小，而且有一个很重要的发现：超过 50% 之后性能会指数级下降。所以你为什么要频繁 /compact、为什么要管理会话——不是因为技术限制，而是因为<strong>性能会变差</strong>。</p>
+        <p><strong>L2 是程序性记忆</strong>，就是 Skills。类比你会骑自行车这个能力——你不会一直想着怎么骑车，但需要的时候自然就用上了。Skills 也是这样，按需加载。</p>
+        <p><strong>L3 是情景记忆</strong>，就是会话历史。以 JSONL 格式持久化到磁盘，记录了"发生了什么"。支持跨会话检索。</p>
+        <p><strong>L4 是语义记忆</strong>，就是 MEMORY.md。Agent 会主动把认为重要的事实写进去，每次启动时自动加载。这是最持久的记忆层。</p>
+        <p>OpenClaw 还引入了<strong>混合检索</strong>机制：70% 向量相似度加 30% 关键词权重，兼顾语义理解和精确匹配。</p>
+      </aside>
+    </section>
+
+    <!-- ═══════════════════ Slide 8: Skills ═══════════════════ -->
+    <section class="slide">
+      <div class="deck-header">
+        <span class="eyebrow">06 / Skills</span>
+      </div>
+      <div style="padding:50px 80px">
+        <p class="kicker" data-anim="fade-up">记忆记住"是什么"，技能记住"怎么做"</p>
+        <h2 class="h2" data-anim="fade-up">Tools 是原子操作，Skills 是工作流</h2>
+
+        <div class="grid g2" style="margin-top:32px">
+          <div data-anim="fade-up">
+            <div class="card card-accent" style="margin-bottom:16px">
+              <h4 style="color:var(--accent-3)">Tools vs Skills</h4>
+              <p style="margin-top:8px"><strong>Tools</strong> = 原子操作（读文件、运行命令）</p>
+              <p><strong>Skills</strong> = 工作流（"帮我做 Code Review"、"帮我部署到 staging"）</p>
+            </div>
+            <div class="card card-accent">
+              <h4 style="color:var(--accent-3)">Skill 描述三要素</h4>
+              <ul style="margin-top:8px;padding-left:18px">
+                <li>Use when — 什么时候用</li>
+                <li>Don't use when — 什么时候不用</li>
+                <li style="color:var(--accent-3)"><strong>反例是必要的</strong>（准确率从 53% 提升到 85%）</li>
+              </ul>
+            </div>
+          </div>
+          <div data-anim="fade-up">
+            <div class="img-frame" style="margin-bottom:16px">
+              <img src="assets/image_6.png" alt="Skill 示例">
+            </div>
+            <div class="card">
+              <h4 style="color:var(--accent-3)">频次分层</h4>
+              <p class="dim" style="font-size:13px;margin-top:6px">高频 → 常驻系统提示 · 低频 → 按需加载 · 极低频 → 直接用文档替代</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span class="slide-number"></span>
+      </div>
+      <aside class="notes">
+        <p>接下来是 Skills。前面说了记忆是记住"是什么"，那 Skills 就是记住"怎么做"。</p>
+        <p>一个关键的区分：<strong>Tools 是原子操作</strong>，比如读一个文件、运行一条命令；<strong>Skills 是工作流</strong>，比如"帮我做一次完整的 Code Review"或者"帮我部署到 staging 环境"——这背后可能涉及十几个 Tool 调用。</p>
+        <p>Skill 的描述有一个很重要的设计原则：<strong>必须包含反例</strong>。有一项实验表明，没有反例时准确率只有 53%，加上反例后跳到 85%，而且响应时间还降了 18%。所以"什么时候不用"和"什么时候用"一样重要。</p>
+        <p>另外一个实用建议是<strong>按频次分层</strong>：高频 Skill 放在系统提示里常驻，低频的按需加载，极低频的干脆就用文档替代，不要做成 Skill。因为每个常驻 Skill 都在消耗你的上下文窗口。</p>
+      </aside>
+    </section>
+
+    <!-- ═══════════════════ Slide 9: Subagents ═══════════════════ -->
+    <section class="slide">
+      <div class="deck-header">
+        <span class="eyebrow">07 / Subagents</span>
+      </div>
+      <div style="padding:50px 80px">
+        <p class="kicker" data-anim="fade-up">Orchestrator-Workers 模式</p>
+        <h2 class="h2" data-anim="fade-up">上下文隔离，独立并行</h2>
+
+        <div style="margin-top:36px" data-anim="fade-up">
+          <div class="flow-h" style="margin-bottom:32px">
+            <div class="flow-node card-accent" style="min-width:180px;border-color:var(--accent-3)">
+              <h4>主 Agent</h4>
+              <p>Orchestrator</p>
+            </div>
+            <span class="flow-arrow">↓</span>
+          </div>
+          <div class="flow-h">
+            <div class="flow-node card" style="min-width:150px">
+              <h4>Subagent A</h4>
+              <p>读大文件</p>
+            </div>
+            <div class="flow-node card" style="min-width:150px">
+              <h4>Subagent B</h4>
+              <p>Web Search</p>
+            </div>
+            <div class="flow-node card" style="min-width:150px">
+              <h4>Subagent C</h4>
+              <p>代码探索</p>
+            </div>
+          </div>
+          <div class="flow-h" style="margin-top:16px">
+            <span style="color:var(--dim);font-size:13px">↓ 摘要返回（非完整上下文）</span>
+          </div>
+        </div>
+
+        <div class="grid g2" style="margin-top:36px">
+          <div class="card card-accent" data-anim="fade-up">
+            <h4 style="color:var(--good)">优势一：避免权限泄露</h4>
+            <p class="dim">子 Agent 从空白消息列表开始，不继承主 Agent 的敏感上下文。</p>
+          </div>
+          <div class="card card-accent" data-anim="fade-up">
+            <h4 style="color:var(--good)">优势二：避免上下文污染</h4>
+            <p class="dim">子 Agent 的完整输出不回灌主 Agent，只返回精炼摘要。</p>
+          </div>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span class="slide-number"></span>
+      </div>
+      <aside class="notes">
+        <p>Subagent 是 Claude Code 中 <strong>Orchestrator-Workers 模式</strong>的直接体现。</p>
+        <p>主 Agent 作为编排器统筹全局，需要做大文件读取、Web 搜索、代码探索等重操作时，就委派给子 Agent。子 Agent 完成后<strong>只返回摘要</strong>，不是把整个上下文倒回来。</p>
+        <p>这个设计有两个核心优势。第一，<strong>避免权限泄露</strong>：每个子 Agent 从空白消息列表开始，它看不到主 Agent 之前的对话，所以即使子 Agent 行为异常，也不会泄露敏感信息。</p>
+        <p>第二，<strong>避免上下文污染</strong>：想象一下，如果一个子 Agent 读了一个 2000 行的文件，直接把内容灌回主 Agent 的上下文窗口，那主 Agent 基本就废了。只返回摘要，既保留了关键信息，又保护了主 Agent 的上下文空间。</p>
+        <p>所以<strong>上下文隔离</strong>不只是安全措施，更是<strong>性能措施</strong>。这也是为什么 Harness 要把 Subagent 作为一个一等公民来管理。</p>
+      </aside>
+    </section>
+
+    <!-- ═══════════════════ Slide 10: Best Practices ═══════════════════ -->
+    <section class="slide">
+      <div class="deck-header">
+        <span class="eyebrow">08 / 最佳实践</span>
+      </div>
+      <div style="padding:50px 80px">
+        <p class="kicker" data-anim="fade-up">大多数最佳实践都基于一个限制</p>
+        <h2 class="h2" data-anim="fade-up">上下文窗口很快就会填满</h2>
+
+        <div style="margin-top:32px">
+          <ol class="bp-list" data-anim="stagger-list">
+            <li class="card">
+              <strong>会话管理，防止 context rot</strong>
+              <p class="dim" style="font-size:13px;margin-top:4px">rewind / 及时 /compact / HANDOFF.md + 新开对话 / 方向不对直接新开比纠正更高效</p>
+            </li>
+            <li class="card">
+              <strong>Explore first, then plan, then code</strong>
+              <p class="dim" style="font-size:13px;margin-top:4px">标准工作流：spec → plan → implement → test，提供明确的验收标准</p>
+            </li>
+            <li class="card">
+              <strong>确定性的逻辑交给确定性的工程</strong>
+              <p class="dim" style="font-size:13px;margin-top:4px">能用代码解决的不用 LLM，能用 Hook 拦截的不用提示词</p>
+            </li>
+            <li class="card">
+              <strong>渐进式披露</strong>
+              <p class="dim" style="font-size:13px;margin-top:4px">把 Agent 当人类来看——提供足够明确的信息它才能工作，明确能力边界</p>
+            </li>
+            <li class="card">
+              <strong>CLAUDE.md 太长不如不写</strong>
+              <p class="dim" style="font-size:13px;margin-top:4px">Unnecessary requirements from context files make tasks harder</p>
+            </li>
+            <li class="card">
+              <strong>Entropy Management</strong>
+              <p class="dim" style="font-size:13px;margin-top:4px">时常整理代码库避免熵增，干净的代码库 = 高效的 Agent</p>
+            </li>
+          </ol>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span class="slide-number"></span>
+      </div>
+      <aside class="notes">
+        <p>最佳实践这一页是实打实的经验总结，每一条背后都有血泪教训。</p>
+        <p>所有实践的<strong>共同前提</strong>是：上下文窗口很快就会填满，超过 50% 后性能指数级下降。所以：</p>
+        <p><strong>第一条，会话管理</strong>。context rot 是真实存在的问题——对话越长，Agent 越容易"忘记"之前的约定。遇到方向不对的情况，<strong>直接新开对话比纠正更高效</strong>。这违反直觉，但非常实用。</p>
+        <p><strong>第三条很关键</strong>——确定性的逻辑交给确定性的工程。能用代码解决的问题不要让 LLM 来猜，能用 Hook 拦截的不要用提示词。LLM 擅长处理不确定性，但确定性的事情它反而不如脚本可靠。</p>
+        <p><strong>第五条是我最喜欢的</strong>——CLAUDE.md 太长不如不写。有一篇论文量化证明了这一点："不必要的上下文文件要求会让任务变难。"所以 CLAUDE.md 应该只写最精简的必要信息。</p>
+      </aside>
+    </section>
+
+    <!-- ═══════════════════ Slide 11: Plugins & Resources ═══════════════════ -->
+    <section class="slide">
+      <div class="deck-header">
+        <span class="eyebrow">09 / 生态</span>
+      </div>
+      <div style="padding:50px 80px">
+        <p class="kicker" data-anim="fade-up">插件与参考资源</p>
+        <h2 class="h2" data-anim="fade-up">站在前人的肩膀上</h2>
+
+        <div style="margin-top:32px">
+          <h4 style="color:var(--accent-3);margin-bottom:14px">推荐插件</h4>
+          <div class="ref-grid" data-anim="fade-up">
+            <div class="ref-card card">
+              <h4>Superpowers</h4>
+              <p>高级工作流 Skills：TDD、调试、并行开发、代码审查等全套工具链</p>
+            </div>
+            <div class="ref-card card">
+              <h4>Waza</h4>
+              <p>精选 Skills 集合，覆盖多种开发场景</p>
+            </div>
+            <div class="ref-card card">
+              <h4>Claude HUD</h4>
+              <p>状态栏可视化，实时展示 Agent 工作状态</p>
+            </div>
+            <div class="ref-card card">
+              <h4>Claude Mem</h4>
+              <p>增强记忆管理，跨会话知识保持</p>
+            </div>
+          </div>
+
+          <h4 style="color:var(--accent-3);margin-top:28px;margin-bottom:14px">参考资源</h4>
+          <div class="ref-grid" data-anim="fade-up">
+            <div class="ref-card card-outline">
+              <h4>Awesome CC Harness</h4>
+              <p><a href="https://wanlanglin.github.io/-awesome-cc-harness/zh/">Harness 生态索引</a></p>
+            </div>
+            <div class="ref-card card-outline">
+              <h4>Agent 架构演进</h4>
+              <p><a href="https://tw93.fun/2026-03-21/agent.html">从架构角度理解 Agent</a></p>
+            </div>
+            <div class="ref-card card-outline">
+              <h4>How Claude Code Works</h4>
+              <p><a href="https://code.claude.com/docs/en/how-claude-code-works">官方工作原理文档</a></p>
+            </div>
+            <div class="ref-card card-outline">
+              <h4>Hermes Agent</h4>
+              <p><a href="https://hermes-agent.nousresearch.com/docs/user-guide/features/overview">Agent 功能全景</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span class="slide-number"></span>
+      </div>
+      <aside class="notes">
+        <p>最后快速过一下生态资源。</p>
+        <p>插件方面，<strong>Superpowers</strong> 是目前最全面的 Skills 工具链，覆盖了 TDD、调试、并行开发、代码审查等完整工作流。<strong>Waza</strong> 是另一个精选 Skills 集合。<strong>Claude HUD</strong> 提供了状态栏可视化，能实时看到 Agent 在做什么。<strong>Claude Mem</strong> 专注于增强跨会话的记忆管理。</p>
+        <p>参考资源方面，推荐四篇：<strong>Awesome CC Harness</strong> 是社区维护的生态索引，<strong>Agent 架构演进</strong>是 tw93 写的架构视角分析，<strong>How Claude Code Works</strong> 是官方文档，<strong>Hermes Agent</strong> 提供了另一种 Agent 系统的功能全景作为对照。</p>
+        <p>这些链接在分享结束后会附在资料里，大家不用急着记。</p>
+      </aside>
+    </section>
+
+    <!-- ═══════════════════ Slide 12: Closing ═══════════════════ -->
+    <section class="slide">
+      <div class="fill center" data-anim="fade-up">
+        <div style="max-width:700px">
+          <p class="kicker">Takeaway</p>
+          <h1 class="h1" style="margin-bottom:28px"><span class="gradient-text">Harness 的本质</span></h1>
+          <div class="quote-line" style="text-align:left">
+            <p>将不确定的智能应用于确定的生产流程</p>
+          </div>
+          <div style="margin-top:36px;text-align:left">
+            <p class="dim" style="font-size:16px;line-height:2">
+              ✦  Agent = while(true) { 感知 → 决策 → 行动 → 反馈 }<br>
+              ✦  上下文工程：Agent 看不到的 = 不存在<br>
+              ✦  确定性的逻辑交给确定的工程<br>
+              ✦  CLAUDE.md 太长不如不写<br>
+              ✦  人类从操作者变成系统设计师
+            </p>
+          </div>
+          <div class="row wrap" style="gap:10px;margin-top:36px;justify-content:center">
+            <span class="pill">Q & A</span>
+          </div>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span class="dim">感谢聆听</span>
+        <span class="slide-number"></span>
+      </div>
+      <aside class="notes">
+        <p>最后总结一下今天最核心的几个 Takeaway。</p>
+        <p><strong>Agent 的本质就是一个循环</strong>——感知、决策、行动、反馈。所有的复杂系统都是五种基本模式的组合。</p>
+        <p><strong>上下文工程</strong>是一切的基础。Agent 看不到的东西等于不存在，所以信息组织的方式直接决定了系统效率。</p>
+        <p><strong>确定性归确定性</strong>——能用代码和 Hook 解决的问题，不要让 LLM 来猜。</p>
+        <p><strong>保持精简</strong>——CLAUDE.md 太长不如不写，unnecessary requirements make tasks harder。</p>
+        <p>最后，<strong>人类的角色在变化</strong>——从操作者变成系统设计师。Harness 不是取代人，而是让人能更高效地设计和管控 AI 系统。</p>
+        <p>以上就是我今天的分享，谢谢大家！有问题欢迎提问。</p>
+      </aside>
+    </section>
+
+  </div>
+
+  <script src=".claude/skills/html-ppt/assets/runtime.js"></script>
+</body>
+</html>
