@@ -19,11 +19,11 @@ The essence of an Agent is a `while true` loop: **Perceive → Decide → Act �
 
 Most Agent systems are compositions of these 5 patterns:
 
-1. **Prompt Chaining**: Break tasks into sequential steps where each LLM processes the previous step's output, with optional code checkpoints in between. Suited for linear workflows like generate-then-translate or outline-then-draft.
-2. **Routing**: Classify input and direct it to a specialized processing pipeline. Simple queries go to a lightweight model; complex ones go to a stronger model. Tech support and billing inquiries follow different logic paths.
-3. **Parallelization**: Two variants — partitioning splits tasks into independent subtasks that run concurrently; voting runs the same task multiple times and takes consensus. Ideal for high-stakes decisions or scenarios requiring multiple perspectives.
-4. **Orchestrator-Workers**: A central LLM dynamically decomposes tasks, delegates to worker LLMs, and synthesizes results. Claude Code's spawn tool and sub-agent mode follow this archetype.
-5. **Evaluator-Optimizer**: The generator produces output, the evaluator gives feedback, and the loop continues until the quality threshold is met. Suited for tasks like translation or creative writing where quality standards are hard to precisely define in code.
+1. **Prompt Chaining**: Break tasks into sequential steps where each LLM processes the previous step's output / optional code checkpoints in between / suited for linear workflows like generate-then-translate or outline-then-draft
+2. **Routing**: Classify input and direct it to a specialized processing pipeline / simple queries go to a lightweight model, complex ones go to a stronger model / tech support and billing inquiries follow different logic paths
+3. **Parallelization**: Two variants — partitioning splits tasks into independent subtasks that run concurrently; voting runs the same task multiple times and takes consensus / ideal for high-stakes decisions or scenarios requiring multiple perspectives
+4. **Orchestrator-Workers**: A central LLM dynamically decomposes tasks, delegates to worker LLMs, and synthesizes results / Claude Code's spawn tool and subagent mode follow this archetype
+5. **Evaluator-Optimizer**: The generator produces output, the evaluator gives feedback, and the loop continues until the quality threshold is met / suited for tasks like translation or creative writing where quality standards are hard to precisely define in code
 
 ![Agent Loop Patterns](assets/img1.svg)
 
@@ -36,14 +36,14 @@ Most Agent systems are compositions of these 5 patterns:
 ### What Claude Code Can See
 
 - **Project files**: Files in the directory and its subdirectories, plus approved files in other locations
-- **Terminal**: Any command you can run — build tools, git, package managers, system utilities, scripts
-- **Git state**: Current branch, uncommitted changes, and recent commit history
+- **Terminal**: Any command you can run — build tools / git / package managers / system utilities / scripts
+- **Git state**: Current branch / uncommitted changes / recent commit history
 - **CLAUDE.md**: How humans guide Claude's behavior
-- **Auto memory**: Claude automatically saves learning outcomes (project patterns and preferences) while working. MEMORY.md's first 200 lines or 25KB are loaded at the start of each session
+- **Auto memory**: Claude automatically saves learning outcomes (project patterns and preferences) while working / MEMORY.md's first 200 lines or 25KB are loaded at the start of each session
 
 ### Permission Modes
 
-There are 7 permission modes, 4 commonly used:
+There are 7 permission modes, 4 of which are commonly used:
 
 ```typescript
 type PermissionMode =
@@ -53,7 +53,7 @@ type PermissionMode =
   | 'dontAsk'           // Auto-reject operations requiring approval
   | 'plan'              // Plan mode restrictions (read-only + plan files)
   | 'auto'              // AI classifier auto-approves (experimental)
-  | 'bubble';           // Bubble up to parent Agent (for sub-agents)
+  | 'bubble';           // Bubble up to parent Agent (for subagents)
 ```
 
 Claude Code has robust mechanisms to prevent overreach.
@@ -85,7 +85,7 @@ A universal four-level memory system:
 | Level | Type | Description |
 |-------|------|-------------|
 | Context window | Working memory | The minimum information needed for the current task, token-limited, requires active management |
-| Skills | Procedural memory | How to do something — operational procedures, domain conventions, loaded on-demand not resident by default |
+| Skills | Procedural memory | How to do something — operational procedures / domain conventions / loaded on-demand, not resident by default |
 | JSONL session history | Episodic memory | What happened — disk persistence, supports cross-session retrieval |
 | MEMORY.md | Semantic memory | Facts the Agent considers important enough to write down, injected into system prompt on startup |
 
@@ -105,7 +105,7 @@ Claude Code has two complementary memory systems: **CLAUDE.md** and **Auto Memor
 
 ## Skills
 
-Memory stores **facts**: your environment, preferences, project locations, and what the Agent has learned about you. Skills store **processes**: multi-step workflows, tool-specific instructions, and reusable patterns. Use memory to remember "what is," use skills to remember "how to."
+Memory stores **facts**: your environment / preferences / project locations / what the Agent has learned about you. Skills store **processes**: multi-step workflows / tool-specific instructions / reusable patterns. Use memory to remember "what is"; use skills to remember "how to."
 
 1. **Tools are atomic operations** (read a file, run a command), **Skills are workflows** ("help me do a code review," "help me deploy to staging")
 2. Skill descriptions should be concise: `Use when` / `Don't use when`
@@ -119,8 +119,8 @@ Memory stores **facts**: your environment, preferences, project locations, and w
 
 ## Subagents
 
-1. The main Agent acts as **Orchestrator** managing the big picture, with multiple sub-agents working independently in parallel (e.g., when reading large files or doing web searches)
-2. **Context isolation** between Orchestrator and subagents — each sub-agent starts from a blank message list and only returns a summary when done
+1. The main Agent acts as **Orchestrator** managing the big picture, with multiple Subagents working independently in parallel (e.g., when reading large files or doing web searches)
+2. **Context isolation** between Orchestrator and Subagents — each Subagent starts from a blank message list and only returns a summary when done
    - Prevents permission leaks
    - Prevents context pollution
 
@@ -131,10 +131,11 @@ Memory stores **facts**: your environment, preferences, project locations, and w
 Most best practices stem from one constraint: Claude's context window fills up fast, and performance degrades exponentially after exceeding 50% capacity.
 
 1. **Session management — prevent context rot**
-   - Use rewind to return to earlier conversation points
+   - Use `/rewind` to return to earlier conversation points
    - Run `/compact` in a timely manner
    - Use HANDOFF.md + start a new conversation
    - When heading in the wrong direction, starting fresh is more efficient than correcting errors
+      > If you've corrected Claude more than twice on the same issue in one session... — [Best Practices for Claude Code](https://code.claude.com/docs/en/best-practices)
 2. **Explore first, then plan, then code**
    - Standard workflow: spec → plan → implement → test
    - Provide clear acceptance criteria
